@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>{% if edit %}Редактировать{% else %}Создать{% endif %} заявку</h3>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a href="{% url 'requests:request_list' %}" class="btn btn-secondary">Отмена</a>
+  </form>
+</div>
+{% endblock %}

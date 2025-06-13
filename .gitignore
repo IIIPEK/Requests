@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.env/
+.venv/
+env/
+venv/
+
+# Environment variables
+.env
+
+# Django migrations (все кроме __init__.py)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# SQLite
+*.sqlite3
+*.db
+
+# Media / static files (если генерируются)
+media/
+staticfiles/
+static/
+
+# VSCode / PyCharm / IDE-штуки
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+htmlcov/
+.coverage
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Test results
+junit-*.xml
+
+# MyPy / Pyright
+.mypy_cache/
+.pyright/
+.dmypy.json
+.pyre/
+
+# Docker / CI
+*.pid
+docker-compose.override.yml
+

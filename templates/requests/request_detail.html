@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load rights %}
+{% block content %}
+    <div class="container mt-4">
+        <h3>Заявка: {{ request_obj.title }}</h3>
+        <p><strong>Отдел:</strong> {{ request_obj.department }}</p>
+        <p><strong>Описание:</strong> {{ request_obj.description }}</p>
+        <p><strong>Кол-во:</strong> {{ request_obj.quantity }}</p>
+        <p><strong>Цена:</strong> {{ request_obj.price }}</p>
+        <p><strong>Итого:</strong> {{ request_obj.total }}</p>
+        <p><strong>Дата:</strong> {{ request_obj.month }}/{{ request_obj.year }}</p>
+        <p><strong>Заявитель:</strong> {{ request_obj.requester }}</p>
+        <p><strong>Утверждающий:</strong> {{ request_obj.approver }}</p>
+        {% if user_rights %}
+            <h6 class="mt-4">Ваши права в отделе "{{ request_obj.department }}":</h6>
+            <ul>
+                {% for ur in user_rights %}
+                    <li>{{ ur.right.name }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Нет прав в этом отделе</p>
+        {% endif %}
+        {% if 'Approver' in user_right_names %}
+            <div class="mt-4">
+                <h5>Действия</h5>
+                <a href="{% url 'requests:change_status' request_obj.pk 'approved' %}"
+                   class="btn btn-success">Утвердить</a>
+                <a href="{% url 'requests:change_status' request_obj.pk 'rejected' %}"
+                   class="btn btn-danger">Отклонить</a>
+                <a href="{% url 'requests:change_status' request_obj.pk 'cancelled' %}" class="btn btn-secondary">Отменить</a>
+            </div>
+
+        {% endif %}
+        <hr>
+        <h5>История статусов</h5>
+        <ul class="list-group">
+            {% for h in history %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ h.status.description }}
+                    <span class="text-muted">{{ h.changed_at|date:"d.m.Y H:i" }}</span>
+
+                </li>
+            {% empty %}
+                <li class="list-group-item">История отсутствует</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

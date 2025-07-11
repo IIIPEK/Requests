@@ -4,6 +4,10 @@
 <div class="container mt-4">
   <h3>Мои заявки</h3>
   <a href="{% url 'requests:request_create' %}" class="btn btn-primary mb-3">Создать заявку</a>
+  <a href="{% url 'requests:export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success float-end">
+     <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
+  </a>
+
 <form method="get" class="row g-3 mb-4">
   <div class="col-md-3">
     <label class="form-label">Отдел</label>
@@ -46,6 +50,7 @@
       <tr>
         <th>Название</th>
         <th>Отдел</th>
+        <th>Месяц/Год</th>
         <th>Дата</th>
         <th>Цена</th>
         <th>Стоимость</th>
@@ -59,6 +64,7 @@
       <tr>
         <td>{{ req.title }}</td>
         <td>{{ req.department }}</td>
+        <td>{{ req.month }}/{{ req.year }}</td>
         <td>{{ req.created_at|date:"d.m.Y" }}</td>
         <td>{{ req.price }}</td>
         <td>{{ req.total }}</td>

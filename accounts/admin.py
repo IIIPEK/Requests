@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Department, Right, UserDepartmentRight
+from .models import CustomUser, Department, Right, UserDepartmentRight, NotificationRole, DepartmentNotificationRecipient
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -23,3 +23,15 @@ class UserDepartmentRightAdmin(admin.ModelAdmin):
     list_display = ('user', 'department', 'right')
     list_filter = ('department', 'right')
     search_fields = ('user__username',)
+
+@admin.register(NotificationRole)
+class NotificationRoleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
+
+
+@admin.register(DepartmentNotificationRecipient)
+class DepartmentNotificationRecipientAdmin(admin.ModelAdmin):
+    list_display = ('department', 'role', 'user')
+    list_filter = ('department', 'role')
+    search_fields = ('user__username',)
+

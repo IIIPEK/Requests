@@ -32,6 +32,15 @@
             </div>
 
         {% endif %}
+        {% if last_status.status.code not in "approved,done,cancelled" %}
+            {% if request_obj.requester == user %}
+                <div class="mt-4">
+                    <h5>Действия автора</h5>
+                    <a href="{% url 'requests:change_status' request_obj.pk 'rejected' %}" class="btn btn-danger">Отклонить</a>
+                    <a href="{% url 'requests:change_status' request_obj.pk 'cancelled' %}" class="btn btn-secondary">Отменить</a>
+                </div>
+            {% endif %}
+        {% endif %}
         <hr>
         <h5>История статусов</h5>
         <ul class="list-group">

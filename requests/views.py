@@ -1,8 +1,13 @@
+import openpyxl
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Subquery, OuterRef
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Request, RequestStatusHistory, RequestStatus
 from .forms import RequestForm
+from openpyxl.utils import get_column_letter
+
 from accounts.models import UserDepartmentRight, Right, Department
 from accounts.utils import has_department_right
 
@@ -108,12 +113,14 @@ def request_detail(request, pk):
         department=req.department
     )
     user_right_names = list(user_rights.values_list('right__name', flat=True))
+    last_status = req.current_status()
 
     return render(request, 'requests/request_detail.html', {
         'request_obj': req,
         'history': history,
         'user_rights': user_rights,
         'user_right_names': user_right_names,
+        'last_status': last_status,
     })
 
 @login_required
@@ -137,3 +144,62 @@ def change_request_status(request, pk, new_status):
         req.save()
 
     return redirect('requests:request_detail', pk=pk)
+
+@login_required
+def export_requests_excel(request):
+    # фильтрация как в request_list
+    user_depts = UserDepartmentRight.objects.filter(user=request.user).values_list('department', flat=True).distinct()
+    requests_qs = Request.objects.filter(department__in=user_depts).order_by('-created_at')
+
+    dept_id = request.GET.get('department')
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    status_code = request.GET.get('status')
+
+    if dept_id:
+        requests_qs = requests_qs.filter(department_id=dept_id)
+    if month:
+        requests_qs = requests_qs.filter(month=month)
+    if year:
+        requests_qs = requests_qs.filter(year=year)
+
+    if status_code:
+        last_status = RequestStatusHistory.objects.filter(
+            request=OuterRef('pk')
+        ).order_by('-changed_at').values('status__code')[:1]
+
+        requests_qs = requests_qs.annotate(
+            last_status_code=Subquery(last_status)
+        ).filter(last_status_code=status_code)
+
+    # создание Excel
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Заявки"
+
+    columns = ['ID', 'Название', 'Отдел', 'Месяц', 'Год', 'Кол-во', 'Цена', 'Сумма', 'Статус', 'Заявитель']
+    ws.append(columns)
+
+    for row_idx, req in enumerate(requests_qs, start=2):
+        status = req.current_status().status.description if req.current_status() else '—'
+        ws.append([
+            req.id,
+            req.title,
+            req.department.description,
+            req.month,
+            req.year,
+            req.quantity,
+            float(req.price),
+            float(req.total),
+            status,
+            req.requester.username
+        ])
+
+    for col in range(1, len(columns) + 1):
+        ws.column_dimensions[get_column_letter(col)].width = 18
+
+    # отдаём как файл
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=requests_export.xlsx'
+    wb.save(response)
+    return response

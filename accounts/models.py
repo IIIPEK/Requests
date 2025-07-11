@@ -34,3 +34,18 @@ class UserDepartmentRight(models.Model):
 
     def __str__(self):
         return f"{self.user.username} / {self.department.code} / {self.right.name}"
+
+class NotificationRole(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class DepartmentNotificationRecipient(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    role = models.ForeignKey(NotificationRole, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('department', 'role', 'user')

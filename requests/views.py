@@ -1,16 +1,17 @@
 import openpyxl
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Subquery, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Request, RequestStatusHistory, RequestStatus
-from .forms import RequestForm
+from .forms import RequestForm, ERPUpdateForm
 from openpyxl.utils import get_column_letter
 
 from accounts.models import UserDepartmentRight, Right, Department
 from accounts.utils import has_department_right
-
+from common.notify import notify_status_change
 
 @login_required
 def request_list(request):
@@ -203,3 +204,32 @@ def export_requests_excel(request):
     response['Content-Disposition'] = 'attachment; filename=requests_export.xlsx'
     wb.save(response)
     return response
+
+@login_required
+def update_po(request, pk):
+    req = get_object_or_404(Request, pk=pk)
+
+    # ⛔ проверка прав перед любой логикой
+    if not has_department_right(request.user, req.department, 'PO_manager'):
+        return redirect('requests:request_detail', pk=pk)
+
+    if request.method == 'POST':
+        form = ERPUpdateForm(request.POST, instance=req)
+        if form.is_valid():
+            req = form.save()
+
+            if req.current_status().status.code == 'approved':
+                new_status = RequestStatus.objects.get(code='in_progress')
+                RequestStatusHistory.objects.create(
+                    request=req,
+                    status=new_status,
+                    changed_by=request.user
+                )
+                notify_status_change(req)
+
+            messages.success(request, 'PO успешно обновлён.')
+            return redirect('requests:request_detail', pk=pk)
+    else:
+        form = ERPUpdateForm(instance=req)
+
+    return render(request, 'requests/update_po.html', {'form': form, 'request_obj': req})

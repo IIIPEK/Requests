@@ -3,6 +3,9 @@
 {% block content %}
     <div class="container mt-4">
         <h3>Заявка: {{ request_obj.title }}</h3>
+        {% if request_obj.po_number %}
+            <p><strong>ПО:</strong> {{ request_obj.po_number }}</p>
+        {% endif %}
         <p><strong>Отдел:</strong> {{ request_obj.department }}</p>
         <p><strong>Описание:</strong> {{ request_obj.description }}</p>
         <p><strong>Кол-во:</strong> {{ request_obj.quantity }}</p>
@@ -21,14 +24,19 @@
         {% else %}
             <p class="text-muted">Нет прав в этом отделе</p>
         {% endif %}
-        {% if 'Approver' in user_right_names %}
+        {% if 'Approver' in user_right_names or 'PO_manager' in user_right_names %}
             <div class="mt-4">
                 <h5>Действия</h5>
-                <a href="{% url 'requests:change_status' request_obj.pk 'approved' %}"
-                   class="btn btn-success">Утвердить</a>
-                <a href="{% url 'requests:change_status' request_obj.pk 'rejected' %}"
-                   class="btn btn-danger">Отклонить</a>
-                <a href="{% url 'requests:change_status' request_obj.pk 'cancelled' %}" class="btn btn-secondary">Отменить</a>
+                {% if 'PO_manager' in user_right_names %}
+                    <a href="{% url 'requests:update_po' request_obj.pk %}" class="btn btn-warning">Обновить PO</a>
+                {% endif %}
+                {% if 'Approver' in user_right_names %}
+                    <a href="{% url 'requests:change_status' request_obj.pk 'approved' %}"
+                       class="btn btn-success">Утвердить</a>
+                    <a href="{% url 'requests:change_status' request_obj.pk 'rejected' %}"
+                       class="btn btn-danger">Отклонить</a>
+                    <a href="{% url 'requests:change_status' request_obj.pk 'cancelled' %}" class="btn btn-secondary">Отменить</a>
+                {%  endif %}
             </div>
 
         {% endif %}

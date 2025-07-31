@@ -3,10 +3,12 @@
 {% block content %}
 <div class="container mt-4">
   <h3>Мои заявки</h3>
-  <a href="{% url 'requests:request_create' %}" class="btn btn-primary mb-3">Создать заявку</a>
-  <a href="{% url 'requests:export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success float-end">
-     <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
-  </a>
+    {% if has_requester_right %}
+      <a href="{% url 'requests:request_create' %}" class="btn btn-primary mb-3">Создать заявку</a>
+    {% endif %}
+    <a href="{% url 'requests:export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success float-end">
+       <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
+    </a>
 
 <form method="get" class="row g-3 mb-4">
   <div class="col-md-3">

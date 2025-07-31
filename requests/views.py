@@ -20,7 +20,10 @@ def request_list(request):
     user_depts = UserDepartmentRight.objects.filter(user=request.user).values_list('department', flat=True).distinct()
 
     requests_qs = Request.objects.filter(department__in=user_depts)
-
+    has_requester_right = UserDepartmentRight.objects.filter(
+        user=request.user,
+        right__name='Requester'
+    ).exists()
     # 🔍 Фильтры из GET
     dept_id = request.GET.get('department')
     month = request.GET.get('month')
@@ -47,6 +50,7 @@ def request_list(request):
         'requests': requests_qs.order_by('-created_at'),
         'departments': departments,
         'statuses': statuses,
+        'has_requester_right': has_requester_right,
         'filters': {
             'department': dept_id,
             'month': month,
@@ -71,8 +75,13 @@ def request_create_or_edit(request, pk=None):
         last_status = instance.current_status()
         if last_status and last_status.status.code in ('approved', 'done', 'cancelled'):
             return redirect('requests:request_detail', pk=pk)
-
-
+    else:
+        has_right = UserDepartmentRight.objects.filter(
+            user=request.user,
+            right__name__in=['Requester', 'Approver']
+        ).exists()
+        if not has_right:
+            return redirect('requests:request_list')
 
     if request.method == 'POST':
         form = RequestForm(request.POST, instance=instance)

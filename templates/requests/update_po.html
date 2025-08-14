@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Обновление PO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>Обновить PO для заявки: {{ request_obj.title }}</h3>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a href="{% url 'requests:request_detail' request_obj.pk %}" class="btn btn-secondary">Отмена</a>
+  </form>
+</div>
+{% endblock %}

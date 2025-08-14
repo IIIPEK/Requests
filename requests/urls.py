@@ -10,4 +10,5 @@ urlpatterns = [
     path('<int:pk>/', views.request_detail, name='request_detail'),
     path('<int:pk>/status/<str:new_status>/', views.change_request_status, name='change_status'),
     path('export/excel/', views.export_requests_excel, name='export_excel'),
+    path('<int:pk>/update-po/', views.update_po, name='update_po'),
 ]

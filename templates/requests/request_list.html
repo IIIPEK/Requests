@@ -1,84 +1,101 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-  <h3>Мои заявки</h3>
-  <a href="{% url 'requests:request_create' %}" class="btn btn-primary mb-3">Создать заявку</a>
-  <a href="{% url 'requests:export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success float-end">
-     <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
-  </a>
+    <div class="container mt-4">
+        <div class="row d-flex flex-column flex-sm-row justify-content-between gap-2">
+            <div class="col-md-4">
+                <h3>Мои заявки</h3>
+            </div>
+            <div class="col-md-4">
+                {% if has_requester_right %}
+                    <a href="{% url 'requests:request_create' %}" class="btn btn-primary mb-3">Создать заявку</a>
+                {% endif %}
+                <a href="{% url 'requests:export_excel' %}?{{ request.GET.urlencode }}"
+                   class="btn btn-outline-success float-end">
+                    <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
+                </a>
+            </div>
+        </div>
 
-<form method="get" class="row g-3 mb-4">
-  <div class="col-md-3">
-    <label class="form-label">Отдел</label>
-    <select name="department" class="form-select">
-      <option value="">— Все —</option>
-      {% for d in departments %}
-        <option value="{{ d.id }}" {% if filters.department == d.id|stringformat:"s" %}selected{% endif %}>
-          {{ d.description }}
-        </option>
-      {% endfor %}
-    </select>
-  </div>
 
-  <div class="col-md-2">
-    <label class="form-label">Месяц</label>
-    <input type="number" name="month" class="form-control" min="1" max="12" value="{{ filters.month }}">
-  </div>
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label class="form-label">Отдел</label>
+                <select name="department" class="form-select">
+                    <option value="">— Все —</option>
+                    {% for d in departments %}
+                        <option value="{{ d.id }}"
+                                {% if filters.department == d.id|stringformat:"s" %}selected{% endif %}>
+                            {{ d.description }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-  <div class="col-md-2">
-    <label class="form-label">Год</label>
-    <input type="number" name="year" class="form-control" value="{{ filters.year }}">
-  </div>
+            <div class="col-md-2">
+                <label class="form-label">Месяц</label>
+                <input type="number" name="month" class="form-control" min="1" max="12" value="{{ filters.month }}">
+            </div>
 
-  <div class="col-md-3">
-    <label class="form-label">Статус</label>
-    <select name="status" class="form-select">
-      <option value="">— Все —</option>
-      {% for s in statuses %}
-        <option value="{{ s.code }}" {% if filters.status == s.code %}selected{% endif %}>{{ s.description }}</option>
-      {% endfor %}
-    </select>
-  </div>
+            <div class="col-md-2">
+                <label class="form-label">Год</label>
+                <input type="number" name="year" class="form-control" value="{{ filters.year }}">
+            </div>
 
-  <div class="col-md-2 align-self-end">
-    <button type="submit" class="btn btn-primary w-100">Фильтр</button>
-  </div>
-</form>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Название</th>
-        <th>Отдел</th>
-        <th>Месяц/Год</th>
-        <th>Дата</th>
-        <th>Цена</th>
-        <th>Стоимость</th>
-        <th>Статус</th>
-        <th>Автор</th>
-        <th>Действия</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for req in requests %}
-      <tr>
-        <td>{{ req.title }}</td>
-        <td>{{ req.department }}</td>
-        <td>{{ req.month }}/{{ req.year }}</td>
-        <td>{{ req.created_at|date:"d.m.Y" }}</td>
-        <td>{{ req.price }}</td>
-        <td>{{ req.total }}</td>
-        <td>{{ req.current_status.status.description|default:"—" }}</td>
-        <td>{{ req.requester }}</td>
-        <td>
-          <a href="{% url 'requests:request_detail' req.pk %}" class="btn btn-sm btn-outline-secondary">Подробнее</a>
-          <a href="{% url 'requests:request_edit' req.pk %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="5">Нет доступных заявок</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+            <div class="col-md-3">
+                <label class="form-label">Статус</label>
+                <select name="status" class="form-select">
+                    <option value="">— Все —</option>
+                    {% for s in statuses %}
+                        <option value="{{ s.code }}"
+                                {% if filters.status == s.code %}selected{% endif %}>{{ s.description }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 align-self-end">
+                <button type="submit" class="btn btn-primary w-100">Фильтр</button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Отдел</th>
+                    <th>Месяц/Год</th>
+                    <th>Дата</th>
+                    <th>Цена</th>
+                    <th>Стоимость</th>
+                    <th>Статус</th>
+                    <th>Автор</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for req in requests %}
+                    <tr>
+                        <td>{{ req.title }}</td>
+                        <td>{{ req.department }}</td>
+                        <td>{{ req.month }}/{{ req.year }}</td>
+                        <td>{{ req.created_at|date:"d.m.Y" }}</td>
+                        <td>{{ req.price }}</td>
+                        <td>{{ req.total }}</td>
+                        <td>{{ req.current_status.status.description|default:"—" }}</td>
+                        <td>{{ req.requester }}</td>
+                        <td>
+                            <a href="{% url 'requests:request_detail' req.pk %}"
+                               class="btn btn-sm btn-outline-secondary">Подробнее</a>
+                            <a href="{% url 'requests:request_edit' req.pk %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">Нет доступных заявок</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

@@ -23,6 +23,8 @@ class Request(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    po_number = models.CharField("PO номер", max_length=50, blank=True, null=True)
+    amount = models.DecimalField("Сумма из MG5", max_digits=12, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
         return f"{self.title} ({self.month}/{self.year})"
